@@ -5,7 +5,7 @@ require('dotenv').config(); // Ensure your environment variables are loaded
 
 let sequelize;
 
-const certPath = path.resolve(__dirname, '../../certs/us-east-1-bundle.pem'); // Adjusted relative path
+const certPath = path.resolve(__dirname, '../../cert/us-east-1-bundle.pem'); // Adjusted relative path
 const caCertificate = fs.readFileSync(certPath, 'utf8');
 
 if (process.env.NODE_ENV === 'development') {

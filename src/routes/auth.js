@@ -4,7 +4,7 @@ const { body, validationResult } = require("express-validator");
 const crypto = require("crypto");
 const { generateToken } = require("../utils/auth");
 const { User } = require("../models");
-const authenticate = require("../middleware/authMiddleware");
+const { authenticate } = require("../middleware/auth");
 
 const router = express.Router();
 
@@ -155,7 +155,7 @@ router.post(
 /**
  * 🎯 Get Logged-In User Profile
  */
-router.get("/profile", authenticate.authenticate, async (req, res) => {
+router.get("/profile", authenticate, async (req, res) => {
   try {
     const user = await User.findByPk(req.user.id);
 
@@ -173,7 +173,7 @@ router.get("/profile", authenticate.authenticate, async (req, res) => {
 /**
  * 🎯 Log out a User
  */
-router.post("/logout", authenticate.authenticate, (req, res) => {
+router.post("/logout", authenticate, (req, res) => {
   res.status(200).json({ message: "User logged out successfully" });
 });
 

@@ -1,46 +1,51 @@
-const User = require("./User");
-const Tournament = require("./Tournament");
-const Player = require("./Player");
-const Score = require("./Score");
-const Leaderboard = require("./Leaderboard");
-const Announcement = require("./Announcement");
-const Payment = require("./Payment");
+const { Sequelize, DataTypes } = require("sequelize");
+const sequelize = require("../config/db"); // Ensure this is your DB connection file
 
-// Define associations
+// Import models
+const UserModel = require("./User");
+const TournamentModel = require("./Tournament");
+const PlayerModel = require("./Player");
+const ScoreModel = require("./Score");
+const LeaderboardModel = require("./Leaderboard");
+const AnnouncementModel = require("./Announcement");
+const PaymentModel = require("./Payment");
 
-// 🏌️ Users can own multiple tournaments
+// Initialize models
+const User = UserModel(sequelize, DataTypes);
+const Tournament = TournamentModel(sequelize, DataTypes);
+const Player = PlayerModel(sequelize, DataTypes);
+const Score = ScoreModel(sequelize, DataTypes);
+const Leaderboard = LeaderboardModel(sequelize, DataTypes);
+const Announcement = AnnouncementModel(sequelize, DataTypes);
+const Payment = PaymentModel(sequelize, DataTypes);
+
+// Define Associations
 User.hasMany(Tournament, { foreignKey: "ownerId", as: "tournaments" });
 Tournament.belongsTo(User, { foreignKey: "ownerId", as: "owner" });
 
-// 🏆 Tournaments have many players
 Tournament.hasMany(Player, { foreignKey: "tournamentId", as: "players" });
 Player.belongsTo(Tournament, { foreignKey: "tournamentId", as: "tournament" });
 
-// 🎮 Users can be linked to players
 User.hasMany(Player, { foreignKey: "userId", as: "playerProfile" });
 Player.belongsTo(User, { foreignKey: "userId", as: "user" });
 
-// ⛳ Players have many scores
 Player.hasMany(Score, { foreignKey: "playerId", as: "scores" });
 Score.belongsTo(Player, { foreignKey: "playerId", as: "player" });
 
-// 🏅 Tournaments have multiple scores
 Tournament.hasMany(Score, { foreignKey: "tournamentId", as: "scores" });
 Score.belongsTo(Tournament, { foreignKey: "tournamentId", as: "tournament" });
 
-// 📊 Leaderboard tracks player rankings
 Leaderboard.belongsTo(Tournament, { foreignKey: "tournamentId", as: "tournament" });
 Leaderboard.belongsTo(Player, { foreignKey: "playerId", as: "player" });
 
-// 📢 Announcements for tournaments
 Announcement.belongsTo(Tournament, { foreignKey: "tournamentId", as: "tournament" });
 
-// 💳 Payments related to tournaments
 Payment.belongsTo(User, { foreignKey: "userId", as: "user" });
 Payment.belongsTo(Tournament, { foreignKey: "tournamentId", as: "tournament" });
 
-// Export all models
+// Export models
 module.exports = {
+  sequelize,
   User,
   Tournament,
   Player,

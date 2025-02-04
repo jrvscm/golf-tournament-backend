@@ -14,7 +14,7 @@ const playerRoutes = require("./src/routes/players");
 const scoreRoutes = require("./src/routes/scores");
 const authRoutes = require("./src/routes/auth");
 
-require("./src/jobs");
+// require("./src/jobs");
 
 dotenv.config();
 
@@ -101,9 +101,9 @@ app.use(cors(corsOptions));
 app.use("/swagger", swaggerUi.serve, swaggerUi.setup(swaggerSpecs));
 
 // Register Routes
-app.use("/tournaments", tournamentRoutes);
-app.use("/players", playerRoutes);
-app.use("/scores", scoreRoutes);
+// app.use("/tournaments", tournamentRoutes);
+// app.use("/players", playerRoutes);
+// app.use("/scores", scoreRoutes);
 app.use("/auth", authRoutes);
 
 // Start the Server
