@@ -1,16 +1,61 @@
 module.exports = (sequelize, DataTypes) => {
-    const User = sequelize.define("User", {
-      fullName: { type: DataTypes.STRING, allowNull: false },
-      email: { type: DataTypes.STRING, allowNull: false, unique: true },
-      password: { type: DataTypes.STRING, allowNull: false },
-      role: { type: DataTypes.ENUM("admin", "tournament_owner", "player"), allowNull: false },
+  const User = sequelize.define("User", {
+    id: {
+      type: DataTypes.INTEGER,
+      autoIncrement: true,
+      primaryKey: true,
+    },
+    fullName: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    email: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      unique: true,
+    },
+    password: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    role: {
+      type: DataTypes.ENUM("admin", "tournament_owner"),
+      allowNull: false,
+    },
+    status: {
+      type: DataTypes.ENUM('pending', 'verified', 'invited'),
+      defaultValue: 'pending',
+    },
+    verificationToken: {
+        type: DataTypes.STRING,
+        allowNull: true,
+    },
+    resetToken: {
+        type: DataTypes.STRING,
+        allowNull: true,
+    },
+    resetTokenExpiry: {
+        type: DataTypes.DATE,
+        allowNull: true,
+    },
+    organizationId: {
+      type: DataTypes.UUID, // Ensure it matches the `Organizations.id` type
+      allowNull: true,
+      references: {
+        model: "Organizations",
+        key: "id",
+      },
+      onUpdate: "CASCADE",
+      onDelete: "SET NULL",
+    },
+  });
+
+  User.associate = (models) => {
+    User.belongsTo(models.Organization, {
+      foreignKey: "organizationId",
+      as: "organization",
     });
-  
-    User.associate = (models) => {
-      User.hasMany(models.Tournament, { foreignKey: "ownerId", as: "tournaments" });
-      User.hasMany(models.Player, { foreignKey: "userId", as: "playerProfile" });
-    };
-  
-    return User;
   };
-  
+
+  return User;
+};
