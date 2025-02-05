@@ -270,5 +270,73 @@ router.get('/verify/:token', async (req, res) => {
   }
 });
 
+/**
+ * Resend the verification email.
+ */
+router.post('/resend-verification', async (req, res) => {
+  const { email } = req.body;
+  const { apikey: apiKey } = req.headers;
+
+  if (!email || !apiKey) {
+      return res.status(400).json({ error: 'Invalid credentials' });
+  }
+
+  try {
+      // Find organization by API key
+      const organization = await Organization.findOne({ where: { apiKey } });
+      if (!organization) {
+          return res.status(401).json({ error: 'Invalid API key.' });
+      }
+
+      // Find the user by email
+      const user = await User.findOne({ where: { email } });
+
+      // Check if user exists and is not already verified
+      if (!user || user.status === 'verified') {
+          return res.status(400).json({ error: 'User not found or already verified.' });
+      }
+
+      // Generate a new verification token
+      const verificationToken = crypto.randomBytes(32).toString('hex');
+      user.verificationToken = verificationToken;
+      await user.save();
+
+      // Set up Nodemailer transporter
+      const transporter = process.env.NODE_ENV === 'development' ? {} : nodemailer.createTransport({
+          host: process.env.SMTP_HOST,
+          port: process.env.SMTP_PORT,
+          secure: process.env.SMTP_SECURE === 'true',
+          auth: {
+              user: process.env.SMTP_USER, 
+              pass: process.env.SMTP_PASS, 
+          },
+      });
+
+      // Construct the verification email
+      const verificationUrl = `${process.env.FRONTEND_URL}/backend/auth/verify/${verificationToken}`;
+      if(process.env.NODE_ENV === 'development') {
+          console.log(verificationUrl);
+      } else {
+          const mailOptions = {
+              from: 'jarvis@highplainsmedia.com', // Sender address
+              to: email, // Recipient email
+              subject: 'Resend Verification Email',
+              text: `You requested to resend your verification email. Please verify your account by clicking the following link: ${verificationUrl}`,
+              html: `<p>You requested to resend your verification email.</p>
+                  <p>Please verify your account by clicking the link below:</p>
+                  <a href="${verificationUrl}">${verificationUrl}</a>`,
+          };
+
+          // Send the email
+          await transporter.sendMail(mailOptions);
+      }
+
+      res.status(200).json({ message: 'Verification email resent successfully.' });
+  } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: 'Failed to resend email.' });
+  }
+});
+
 
 module.exports = router;
